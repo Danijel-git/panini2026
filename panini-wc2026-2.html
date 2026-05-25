@@ -773,43 +773,79 @@ function updateStickyTop() {
 function loadGist() {
   var token = "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";
   var gid = "7f7aa6cba4d9eab8d2ebe27b14471ecb";
-  if (!token || !gid) { showMsg('Unesi i token i Gist ID', false); return; }
+  var imeFajla = "panini_wc2026_tracker.json";
+  
+  if (!token || !gid) return;
+  
+  // POPRAVLJEN LINK ZA GITHUB API
   fetch('https://github.com' + gid, {
     headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github+json' }
   }).then(function(r) {
     if (!r.ok) throw new Error('GitHub greska ' + r.status);
     return r.json();
   }).then(function(data) {
-    var raw = data.files && data.files[GFILE] && data.files[GFILE].content;
+    var raw = data.files && data.files[imeFajla] && data.files[imeFajla].content;
     if (!raw) throw new Error('Fajl nije pronaden u Gist-u');
     var parsed = JSON.parse(raw);
     collected = {};
     var arr = parsed.collected || [];
     for (var i = 0; i < arr.length; i++) collected[arr[i]] = 1;
     saveLocal(); updateHeader(); render();
-    showMsg('Ucitano ' + arr.length + ' slicica', true);
-  }).catch(function(e) { showMsg(e.message, false); });
+    
+    // POPRAVLJENO ISPISIVANJE PORUKE
+    var msgEl = document.getElementById('smsg');
+    if (msgEl) {
+      msgEl.style.display = 'block';
+      msgEl.style.background = '#c8f0d8';
+      msgEl.innerHTML = 'Ucitano ' + arr.length + ' slicica';
+    }
+  }).catch(function(e) { 
+    var msgEl = document.getElementById('smsg');
+    if (msgEl) {
+      msgEl.style.display = 'block';
+      msgEl.style.background = '#fecaca';
+      msgEl.innerHTML = e.message;
+    }
+  });
 }
 
 function saveGist() {
   var token = "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";
   var gid = "7f7aa6cba4d9eab8d2ebe27b14471ecb";
-  if (!token) { showMsg('Unesi GitHub token', false); return; }
+  var imeFajla = "panini_wc2026_tracker.json";
+  
+  if (!token || !gid) return;
   var arr = Object.keys(collected).map(Number);
   var payload = { collected: arr, savedAt: new Date().toISOString() };
   var body = { description: 'Panini WC 2026 tracker', public: false, files: {} };
-  body.files[GFILE] = { content: JSON.stringify(payload, null, 2) };
-  fetch(gid ? 'https://github.com' + gid : 'https://github.com', {
-    method: gid ? 'PATCH' : 'POST',
+  body.files[imeFajla] = { content: JSON.stringify(payload, null, 2) };
+  
+  // POPRAVLJEN LINK ZA GITHUB API ZA PROMENU PODATAKA
+  fetch('https://github.com' + gid, {
+    method: 'PATCH',
     headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json', Accept: 'application/vnd.github+json' },
     body: JSON.stringify(body)
   }).then(function(r) {
     if (!r.ok) throw new Error('Greska ' + r.status);
     return r.json();
   }).then(function(data) {
-    showMsg('Sacuvano! ' + arr.length + ' slicica', true);
-  }).catch(function(e) { showMsg(e.message, false); });
+    // POPRAVLJENO ISPISIVANJE PORUKE
+    var msgEl = document.getElementById('smsg');
+    if (msgEl) {
+      msgEl.style.display = 'block';
+      msgEl.style.background = '#c8f0d8';
+      msgEl.innerHTML = 'Sacuvano! ' + arr.length + ' slicica';
+    }
+  }).catch(function(e) { 
+    var msgEl = document.getElementById('smsg');
+    if (msgEl) {
+      msgEl.style.display = 'block';
+      msgEl.style.background = '#fecaca';
+      msgEl.innerHTML = e.message;
+    }
+  });
 }
+
 
 
 
