@@ -735,10 +735,14 @@ function render() {
   document.getElementById('list').innerHTML = html;
 }
 
+var GFILE = "panini_wc2026_tracker.json";
+var MOJ_TOKEN = "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";
+var MOJ_GIST_ID = "7f7aa6cba4d9eab8d2ebe27b14471ecb";
+
 function toggle(n) {
   if (collected[n]) delete collected[n]; else collected[n] = 1;
   saveLocal();
-  saveGist();
+  saveGist(); // Šalje na GitHub automatski na svaki klik
   updateHeader();
   render();
 }
@@ -764,10 +768,6 @@ function updateStickyTop() {
   if (cfg.style.display === 'block') ch = cfg.offsetHeight;
   document.getElementById('filters').style.top = (hh + ch) + 'px';
 }
-
-var MOJ_TOKEN = "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";
-var MOJ_GIST_ID = "7f7aa6cba4d9eab8d2ebe27b14471ecb";
-var GFILE = "panini_wc2026_tracker.json";
 
 function loadGist() {
   var token = MOJ_TOKEN;
