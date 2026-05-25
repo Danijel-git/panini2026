@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panini WC 2026 – Tracker sličica</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #f0f4f8; color: #1a2540; font-family: Arial, sans-serif; font-size: 14px; }
+
+#hdr {
+  background: #1a3a6e;
+  padding: 12px 14px;
+  position: sticky; top: 0; z-index: 30;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+#hdr-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+#hdr h1 { font-size: 17px; color: #fff; font-weight: 900; }
+#hdr .sub { font-size: 11px; color: #9bb5dc; margin-top: 2px; }
+#score { font-size: 22px; font-weight: 900; color: #4ade80; line-height: 1; text-align: right; }
+#score span { font-size: 11px; color: #9bb5dc; display: block; }
+#prog { background: rgba(255,255,255,0.2); border-radius: 4px; height: 6px; overflow: hidden; }
+#progfill { height: 100%; background: linear-gradient(90deg,#16a34a,#4ade80); width: 0%; transition: width .3s; }
+#pct { font-size: 10px; color: #9bb5dc; margin-top: 3px; }
+#cfg-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 6px 9px; cursor: pointer; color: #fff; font-size: 16px; }
+
+#cfg {
+  background: #e8eef7; border-bottom: 2px solid #c5d3e8;
+  padding: 12px 14px; display: none;
+}
+#cfg h3 { font-size: 12px; color: #1a3a6e; letter-spacing: 1px; margin-bottom: 6px; font-weight: 900; }
+#cfg .hint { font-size: 11px; color: #5a6b90; margin-bottom: 8px; line-height: 1.5; background: #fff; padding: 6px 8px; border-radius: 5px; border-left: 3px solid #1a3a6e; }
+#cfg input {
+  width: 100%; background: #fff; border: 1px solid #c5d3e8; border-radius: 5px;
+  padding: 8px 10px; color: #1a2540; font-size: 13px; outline: none; margin-bottom: 6px;
+}
+#cfg input:focus { border-color: #1a3a6e; }
+.brow { display: flex; gap: 6px; }
+.bload { flex:1; background:#1a3a6e; border:none; border-radius:5px; padding:9px; color:#fff; cursor:pointer; font-size:12px; font-weight:700; }
+.bsave { flex:1; background:#16a34a; border:none; border-radius:5px; padding:9px; color:#fff; cursor:pointer; font-size:12px; font-weight:700; }
+.bload:hover { background:#1e4a8a; }
+.bsave:hover { background:#15803d; }
+#smsg { display:none; margin-top:8px; padding:7px 10px; border-radius:5px; font-size:12px; font-weight:600; }
+#gistshow { margin-top:6px; font-size:10px; color:#5a6b90; word-break:break-all; }
+
+#filters {
+  background: #fff; border-bottom: 2px solid #c5d3e8;
+  padding: 10px 14px; position: sticky; top: 89px; z-index: 20;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+#filters input, #filters select {
+  width: 100%; background: #f5f8fc; border: 1px solid #c5d3e8; border-radius: 6px;
+  padding: 8px 12px; color: #1a2540; font-size: 13px; outline: none; margin-bottom: 8px;
+  appearance: none;
+}
+#filters input:focus, #filters select:focus { border-color: #1a3a6e; background: #fff; }
+.fbts { display: flex; gap: 5px; }
+.fbt {
+  flex:1; background:#f0f4f8; border: 1px solid #c5d3e8; border-radius:5px;
+  padding:7px 2px; color:#5a6b90; cursor:pointer; font-size:11px; font-weight:600;
+}
+.fbt.on { background:#1a3a6e; color:#fff; border-color:#1a3a6e; }
+.fbt:hover:not(.on) { background:#e0e8f4; }
+#rcount { font-size: 10px; color: #8a9bb0; margin-top: 6px; }
+
+#list { padding-bottom: 50px; }
+.row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px; border-bottom: 1px solid #e8eef7; cursor: pointer;
+  background: #fff; transition: background 0.1s;
+}
+.row.got { background: #edfbf2; }
+.row:hover { background: #f5f8fc; }
+.row.got:hover { background: #d8f7e8; }
+
+.anum { min-width: 34px; text-align: center; }
+.anum .n { font-size: 14px; font-weight: 900; color: #9ab0cc; line-height: 1; }
+.anum .n.gc { color: #16a34a; }
+.anum .lbl { font-size: 8px; color: #b0c0d8; font-weight: 600; letter-spacing: 0.5px; }
+
+.badge {
+  min-width: 52px; text-align: center; border-radius: 5px;
+  padding: 3px 4px; background: #e8eef7;
+}
+.badge.foil { background: linear-gradient(135deg,#fbbf24,#f59e0b); }
+.badge.gc { background: #c8f0d8; }
+.badge .code { font-size: 11px; font-weight: 900; color: #5a6b90; letter-spacing: 0.5px; }
+.badge.foil .code { color: #78350f; }
+.badge.gc .code { color: #15803d; }
+.badge .fl { font-size: 8px; color: #92400e; font-weight: 700; }
+
+.info { flex: 1; min-width: 0; }
+.info .nm { font-size: 13px; color: #2a3a5a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.info .nm.gc { color: #14532d; font-weight: 700; }
+.info .tm { font-size: 10px; color: #8a9bb0; }
+
+.chk {
+  width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+  border: 2px solid #c5d3e8; background: #fff;
+  display: flex; align-items: center; justify-content: center;
+}
+.chk.on { border-color: #16a34a; background: #16a34a; }
+.chk.on::after { content: '✓'; color: #fff; font-size: 13px; font-weight: 900; }
+
+#foot {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #fff; border-top: 1px solid #c5d3e8;
+  padding: 7px 14px; text-align: center;
+  font-size: 10px; color: #8a9bb0;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.06);
+}
+
+.team-hdr {
+  background: #e8eef7; padding: 5px 14px;
+  font-size: 10px; font-weight: 900; color: #1a3a6e;
+  letter-spacing: 1px; text-transform: uppercase;
+  border-bottom: 1px solid #c5d3e8;
+}
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <div id="hdr-top">
+    <div>
+      <h1>⚽ Panini WC 2026</h1>
+      <div class="sub">Tracker sličica – 980 ukupno</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div id="score">0 <span>/ 980</span></div>
+      <button id="cfg-btn" onclick="toggleCfg()">⚙️</button>
+    </div>
+  </div>
+  <div id="prog"><div id="progfill"></div></div>
+  <div id="pct">0% kompletan album</div>
+</div>
+
+<div id="cfg">
+  <h3>🔗 GITHUB GIST – PAMĆENJE NA SVIM UREĐAJIMA</h3>
+  <div class="hint">
+    Tvoje izmene čuvaju se na GitHubu (Gist) i sinhronizuju se na svim uređajima.<br>
+    1. Idi na <b>github.com</b> → Settings → Developer settings → Personal access tokens<br>
+    2. Napravi novi token, označi scope: <b>gist</b><br>
+    3. Unesi token i klikni <b>Sačuvaj</b> (automatski pravi novi Gist).<br>
+    Zapamti Gist ID za sledeći put!
+  </div>
+  <input type="password" id="gh-tok" placeholder="GitHub token (ghp_...)">
+  <input type="text" id="gh-gid" placeholder="Gist ID (prazno = napravi novi)">
+  <div class="brow">
+    <button class="bload" onclick="loadGist()">📥 Učitaj sa GitHuba</button>
+    <button class="bsave" onclick="saveGist()">💾 Sačuvaj na GitHub</button>
+  </div>
+  <div id="smsg"></div>
+  <div id="gistshow"></div>
+</div>
+
+<div id="filters">
+  <input type="text" id="srch" placeholder="🔍  Pretraži po imenu, kodu (MEX6, ENG15...) ili broju app..." oninput="render()">
+  <select id="tsel" onchange="render()"></select>
+  <div class="fbts">
+    <button class="fbt on" onclick="setMode('sve',this)">Sve</button>
+    <button class="fbt" onclick="setMode('imam',this)">✓ Imam</button>
+    <button class="fbt" onclick="setMode('nemam',this)">○ Nemam</button>
+  </div>
+  <div id="rcount"></div>
+</div>
+
+<div id="list"></div>
+<div id="foot">🟡 Zlatna oznaka = FOIL &nbsp;|&nbsp; Klik na red = označavam "imam"</div>
+
+<script>
+var S = [
+  ["00","Panini Logo",1,"Uvod"],
+  ["FWC1","Official Emblem 1",1,"Uvod"],
+  ["FWC2","Official Emblem 2",1,"Uvod"],
+  ["FWC3","Official Mascots",1,"Uvod"],
+  ["FWC4","Official Slogan",1,"Uvod"],
+  ["FWC5","Official Ball",1,"Uvod"],
+  ["FWC6","Canada - Host Cities",1,"Uvod"],
+  ["FWC7","Mexico - Host Cities",1,"Uvod"],
+  ["FWC8","USA - Host Cities",1,"Uvod"],
+  ["MEX1","Team Logo",1,"Mexico"],["MEX2","Luis Malagón",0,"Mexico"],
+  ["MEX3","Johan Vasquez",0,"Mexico"],["MEX4","Jorge Sánchez",0,"Mexico"],
+  ["MEX5","Cesar Montes",0,"Mexico"],["MEX6","Jesus Gallardo",0,"Mexico"],
+  ["MEX7","Israel Reyes",0,"Mexico"],["MEX8","Diego Lainez",0,"Mexico"],
+  ["MEX9","Carlos Rodriguez",0,"Mexico"],["MEX10","Edson Alvarez",0,"Mexico"],
+  ["MEX11","Orbelin Pineda",0,"Mexico"],["MEX12","Marcel Ruiz",0,"Mexico"],
+  ["MEX13","Team Photo",0,"Mexico"],["MEX14","Erick Sanchez",0,"Mexico"],
+  ["MEX15","Hirving Lozano",0,"Mexico"],["MEX16","Santiago Gimenez",0,"Mexico"],
+  ["MEX17","Raul Jimenez",0,"Mexico"],["MEX18","Alexis Vega",0,"Mexico"],
+  ["MEX19","Roberto Alvarado",0,"Mexico"],["MEX20","Cesar Huerta",0,"Mexico"],
+  ["RSA1","Team Logo",1,"South Africa"],["RSA2","Ronwen Williams",0,"South Africa"],
+  ["RSA3","Sipho Chaine",0,"South Africa"],["RSA4","Aubrey Modiba",0,"South Africa"],
+  ["RSA5","Samukele Kabini",0,"South Africa"],["RSA6","Mbekezeli Mbokazi",0,"South Africa"],
+  ["RSA7","Khulumani Ndamane",0,"South Africa"],["RSA8","Siyabonga Ngezana",0,"South Africa"],
+  ["RSA9","Khuliso Mudau",0,"South Africa"],["RSA10","Nkosinathi Sibisi",0,"South Africa"],
+  ["RSA11","Teboho Mokoena",0,"South Africa"],["RSA12","Thalente Mbatha",0,"South Africa"],
+  ["RSA13","Team Photo",0,"South Africa"],["RSA14","Bathasi Aubaas",0,"South Africa"],
+  ["RSA15","Yaya Sithole",0,"South Africa"],["RSA16","Sipho Mbule",0,"South Africa"],
+  ["RSA17","Lyle Foster",0,"South Africa"],["RSA18","Iqraam Rayners",0,"South Africa"],
+  ["RSA19","Mohau Nkota",0,"South Africa"],["RSA20","Oswin Appollis",0,"South Africa"],
+  ["KOR1","Team Logo",1,"South Korea"],["KOR2","Hyeon-woo Jo",0,"South Korea"],
+  ["KOR3","Seung-Gyu Kim",0,"South Korea"],["KOR4","Min-jae Kim",0,"South Korea"],
+  ["KOR5","Yu-min Cho",0,"South Korea"],["KOR6","Young-woo Seol",0,"South Korea"],
+  ["KOR7","Han-beom Lee",0,"South Korea"],["KOR8","Tae-seok Lee",0,"South Korea"],
+  ["KOR9","Myung-jae Lee",0,"South Korea"],["KOR10","Jae-sung Lee",0,"South Korea"],
+  ["KOR11","In-beom Hwang",0,"South Korea"],["KOR12","Kang-in Lee",0,"South Korea"],
+  ["KOR13","Team Photo",0,"South Korea"],["KOR14","Seung-ho Paik",0,"South Korea"],
+  ["KOR15","Jens Castrop",0,"South Korea"],["KOR16","Dong-yeong Lee",0,"South Korea"],
+  ["KOR17","Gue-sung Cho",0,"South Korea"],["KOR18","Heung-min Son",0,"South Korea"],
+  ["KOR19","Hee-chan Hwang",0,"South Korea"],["KOR20","Hyeon-Gyu Oh",0,"South Korea"],
+  ["CZE1","Team Logo",1,"Czechia"],["CZE2","Matej Kovar",0,"Czechia"],
+  ["CZE3","Jindrich Stanek",0,"Czechia"],["CZE4","Ladislav Krejci",0,"Czechia"],
+  ["CZE5","Vladimir Coufal",0,"Czechia"],["CZE6","Jaroslav Zeleny",0,"Czechia"],
+  ["CZE7","Tomas Holes",0,"Czechia"],["CZE8","David Zima",0,"Czechia"],
+  ["CZE9","Michal Sadilek",0,"Czechia"],["CZE10","Lukas Provod",0,"Czechia"],
+  ["CZE11","Lukas Cerv",0,"Czechia"],["CZE12","Tomas Soucek",0,"Czechia"],
+  ["CZE13","Team Photo",0,"Czechia"],["CZE14","Pavel Sulc",0,"Czechia"],
+  ["CZE15","Matej Vydra",0,"Czechia"],["CZE16","Vasil Kusej",0,"Czechia"],
+  ["CZE17","Tomas Chory",0,"Czechia"],["CZE18","Vaclav Cerny",0,"Czechia"],
+  ["CZE19","Adam Hlozek",0,"Czechia"],["CZE20","Patrik Schick",0,"Czechia"],
+  ["CAN1","Team Logo",1,"Canada"],["CAN2","Dayne St.Clair",0,"Canada"],
+  ["CAN3","Alphonso Davies",0,"Canada"],["CAN4","Alistair Johnston",0,"Canada"],
+  ["CAN5","Samuel Adekugbe",0,"Canada"],["CAN6","Riche Larvea",0,"Canada"],
+  ["CAN7","Derek Cornelius",0,"Canada"],["CAN8","Moise Bombito",0,"Canada"],
+  ["CAN9","Kamal Miller",0,"Canada"],["CAN10","Stephen Eustaquio",0,"Canada"],
+  ["CAN11","Ismael Kone",0,"Canada"],["CAN12","Jonathan Osorio",0,"Canada"],
+  ["CAN13","Team Photo",0,"Canada"],["CAN14","Jacob Shaffelburg",0,"Canada"],
+  ["CAN15","Mathieu Choiniere",0,"Canada"],["CAN16","Niko Sigur",0,"Canada"],
+  ["CAN17","Tajon Buchanan",0,"Canada"],["CAN18","Liam Millar",0,"Canada"],
+  ["CAN19","Cyle Larin",0,"Canada"],["CAN20","Jonathan David",0,"Canada"],
+  ["BIH1","Team Logo",1,"Bosna i Hercegovina"],["BIH2","Nikola Vasilj",0,"Bosna i Hercegovina"],
+  ["BIH3","Amer Dedic",0,"Bosna i Hercegovina"],["BIH4","Sead Kolasinac",0,"Bosna i Hercegovina"],
+  ["BIH5","Tarik Muharemovic",0,"Bosna i Hercegovina"],["BIH6","Nihad Mujakic",0,"Bosna i Hercegovina"],
+  ["BIH7","Nikola Katic",0,"Bosna i Hercegovina"],["BIH8","Amir Hadziahmetovic",0,"Bosna i Hercegovina"],
+  ["BIH9","Benjamin Tahirovic",0,"Bosna i Hercegovina"],["BIH10","Armin Gigovic",0,"Bosna i Hercegovina"],
+  ["BIH11","Ivan Sunjic",0,"Bosna i Hercegovina"],["BIH12","Ivan Basic",0,"Bosna i Hercegovina"],
+  ["BIH13","Team Photo",0,"Bosna i Hercegovina"],["BIH14","Dzenis Burnic",0,"Bosna i Hercegovina"],
+  ["BIH15","Esmir Bajraktarevic",0,"Bosna i Hercegovina"],["BIH16","Amar Memic",0,"Bosna i Hercegovina"],
+  ["BIH17","Ermedin Demirovic",0,"Bosna i Hercegovina"],["BIH18","Edin Dzeko",0,"Bosna i Hercegovina"],
+  ["BIH19","Samed Bazdar",0,"Bosna i Hercegovina"],["BIH20","Haris Tabakovic",0,"Bosna i Hercegovina"],
+  ["QAT1","Team Logo",1,"Qatar"],["QAT2","Meshaal Barsham",0,"Qatar"],
+  ["QAT3","Sultan Albrake",0,"Qatar"],["QAT4","Lucas Mendes",0,"Qatar"],
+  ["QAT5","Homam Ahmed",0,"Qatar"],["QAT6","Boualem Khoukhi",0,"Qatar"],
+  ["QAT7","Pedro Miguel",0,"Qatar"],["QAT8","Tarek Salman",0,"Qatar"],
+  ["QAT9","Mohamed Al-Mannai",0,"Qatar"],["QAT10","Karim Boudiaf",0,"Qatar"],
+  ["QAT11","Assim Madibo",0,"Qatar"],["QAT12","Ahmed Fatehi",0,"Qatar"],
+  ["QAT13","Team Photo",0,"Qatar"],["QAT14","Mohammed Waad",0,"Qatar"],
+  ["QAT15","Abdulaziz Hatem",0,"Qatar"],["QAT16","Hassan Al-Haydos",0,"Qatar"],
+  ["QAT17","Edmilson Junior",0,"Qatar"],["QAT18","Akram Hassan Afif",0,"Qatar"],
+  ["QAT19","Ahmed Al Ganehi",0,"Qatar"],["QAT20","Almoez Ali",0,"Qatar"],
+  ["SUI1","Team Logo",1,"Switzerland"],["SUI2","Gregor Kobel",0,"Switzerland"],
+  ["SUI3","Yvon Mvogo",0,"Switzerland"],["SUI4","Manuel Akanji",0,"Switzerland"],
+  ["SUI5","Ricardo Rodriguez",0,"Switzerland"],["SUI6","Nico Elvedi",0,"Switzerland"],
+  ["SUI7","Aurele Amenda",0,"Switzerland"],["SUI8","Silvan Widmer",0,"Switzerland"],
+  ["SUI9","Granit Xhaka",0,"Switzerland"],["SUI10","Denis Zakaria",0,"Switzerland"],
+  ["SUI11","Remo Freuler",0,"Switzerland"],["SUI12","Fabian Rieder",0,"Switzerland"],
+  ["SUI13","Team Photo",0,"Switzerland"],["SUI14","Ardon Jashari",0,"Switzerland"],
+  ["SUI15","Johan Manzambi",0,"Switzerland"],["SUI16","Michel Aebischer",0,"Switzerland"],
+  ["SUI17","Breel Embolo",0,"Switzerland"],["SUI18","Ruben Vargas",0,"Switzerland"],
+  ["SUI19","Dan Ndoye",0,"Switzerland"],["SUI20","Zeki Amdouni",0,"Switzerland"],
+  ["BRA1","Team Logo",1,"Brazil"],["BRA2","Alisson",0,"Brazil"],
+  ["BRA3","Bento",0,"Brazil"],["BRA4","Marquinhos",0,"Brazil"],
+  ["BRA5","Eder Militao",0,"Brazil"],["BRA6","Gabriel Magalhaes",0,"Brazil"],
+  ["BRA7","Danilo",0,"Brazil"],["BRA8","Wesley",0,"Brazil"],
+  ["BRA9","Lucas Paqueta",0,"Brazil"],["BRA10","Casemiro",0,"Brazil"],
+  ["BRA11","Bruno Guimaraes",0,"Brazil"],["BRA12","Luiz Henrique",0,"Brazil"],
+  ["BRA13","Team Photo",0,"Brazil"],["BRA14","Vinicius Junior",0,"Brazil"],
+  ["BRA15","Rodrygo",0,"Brazil"],["BRA16","Joao Pedro",0,"Brazil"],
+  ["BRA17","Matheus Cunha",0,"Brazil"],["BRA18","Gabriel Martinelli",0,"Brazil"],
+  ["BRA19","Raphinha",0,"Brazil"],["BRA20","Estevao",0,"Brazil"],
+  ["MAR1","Team Logo",1,"Morocco"],["MAR2","Yassine Bounou",0,"Morocco"],
+  ["MAR3","Munir El Kajoui",0,"Morocco"],["MAR4","Achraf Hakimi",0,"Morocco"],
+  ["MAR5","Noussair Mazraoui",0,"Morocco"],["MAR6","Nayef Aguerd",0,"Morocco"],
+  ["MAR7","Roman Saiss",0,"Morocco"],["MAR8","Jawad El Yamiq",0,"Morocco"],
+  ["MAR9","Adam Masina",0,"Morocco"],["MAR10","Sofyan Amrabat",0,"Morocco"],
+  ["MAR11","Azzedine Ounahi",0,"Morocco"],["MAR12","Eliesse Ben Seghir",0,"Morocco"],
+  ["MAR13","Team Photo",0,"Morocco"],["MAR14","Bilal El Khannouss",0,"Morocco"],
+  ["MAR15","Ismael Saibari",0,"Morocco"],["MAR16","Youssef En-Nesyri",0,"Morocco"],
+  ["MAR17","Abde Ezzalzouli",0,"Morocco"],["MAR18","Soufiane Rahimi",0,"Morocco"],
+  ["MAR19","Brahim Diaz",0,"Morocco"],["MAR20","Ayoub El Kaabi",0,"Morocco"],
+  ["HAI1","Team Logo",1,"Haiti"],["HAI2","Johny Placide",0,"Haiti"],
+  ["HAI3","Carlens Arcus",0,"Haiti"],["HAI4","Martin Experience",0,"Haiti"],
+  ["HAI5","Jean-Kevin Duverne",0,"Haiti"],["HAI6","Ricardo Ade",0,"Haiti"],
+  ["HAI7","Duke Lacroix",0,"Haiti"],["HAI8","Garven Metusala",0,"Haiti"],
+  ["HAI9","Hannes Delcroix",0,"Haiti"],["HAI10","Leverton Pierre",0,"Haiti"],
+  ["HAI11","Danley Jean Jacques",0,"Haiti"],["HAI12","Jean-Ricner Bellegarde",0,"Haiti"],
+  ["HAI13","Team Photo",0,"Haiti"],["HAI14","Christopher Attys",0,"Haiti"],
+  ["HAI15","Derrick Etienne Jr",0,"Haiti"],["HAI16","Josue Casimir",0,"Haiti"],
+  ["HAI17","Ruben Providence",0,"Haiti"],["HAI18","Duckens Nazon",0,"Haiti"],
+  ["HAI19","Louicius Deedson",0,"Haiti"],["HAI20","Frantzdy Pierrot",0,"Haiti"],
+  ["SCO1","Team Logo",1,"Scotland"],["SCO2","Angus Gunn",0,"Scotland"],
+  ["SCO3","Jack Hendry",0,"Scotland"],["SCO4","Kieran Tierney",0,"Scotland"],
+  ["SCO5","Aaron Hickey",0,"Scotland"],["SCO6","Andrew Robertson",0,"Scotland"],
+  ["SCO7","Scott McKenna",0,"Scotland"],["SCO8","John Souttar",0,"Scotland"],
+  ["SCO9","Anthony Ralston",0,"Scotland"],["SCO10","Grant Hanley",0,"Scotland"],
+  ["SCO11","Scott McTominay",0,"Scotland"],["SCO12","Billy Gilmour",0,"Scotland"],
+  ["SCO13","Team Photo",0,"Scotland"],["SCO14","Lewis Ferguson",0,"Scotland"],
+  ["SCO15","Ryan Christie",0,"Scotland"],["SCO16","Kenny McLean",0,"Scotland"],
+  ["SCO17","John McGinn",0,"Scotland"],["SCO18","Lyndon Dykes",0,"Scotland"],
+  ["SCO19","Che Adams",0,"Scotland"],["SCO20","Ben Doak",0,"Scotland"],
+  ["USA1","Team Logo",1,"USA"],["USA2","Matt Freese",0,"USA"],
+  ["USA3","Chris Richards",0,"USA"],["USA4","Tim Ream",0,"USA"],
+  ["USA5","Mark McKenzie",0,"USA"],["USA6","Alex Freeman",0,"USA"],
+  ["USA7","Antonee Robinson",0,"USA"],["USA8","Tyler Adams",0,"USA"],
+  ["USA9","Tanner Tessmann",0,"USA"],["USA10","Weston McKennie",0,"USA"],
+  ["USA11","Christian Roldan",0,"USA"],["USA12","Timothy Weah",0,"USA"],
+  ["USA13","Team Photo",0,"USA"],["USA14","Diego Luna",0,"USA"],
+  ["USA15","Malik Tillman",0,"USA"],["USA16","Christian Pulisic",0,"USA"],
+  ["USA17","Brenden Aaronson",0,"USA"],["USA18","Ricardo Pepi",0,"USA"],
+  ["USA19","Haji Wright",0,"USA"],["USA20","Folarin Balogun",0,"USA"],
+  ["PAR1","Team Logo",1,"Paraguay"],["PAR2","Roberto Fernandez",0,"Paraguay"],
+  ["PAR3","Orlando Gill",0,"Paraguay"],["PAR4","Gustavo Gomez",0,"Paraguay"],
+  ["PAR5","Fabian Balbuena",0,"Paraguay"],["PAR6","Juan Jose Caceres",0,"Paraguay"],
+  ["PAR7","Omar Alderete",0,"Paraguay"],["PAR8","Junior Alonso",0,"Paraguay"],
+  ["PAR9","Mathias Villasanti",0,"Paraguay"],["PAR10","Diego Gomez",0,"Paraguay"],
+  ["PAR11","Damian Bobadilla",0,"Paraguay"],["PAR12","Andres Cubas",0,"Paraguay"],
+  ["PAR13","Team Photo",0,"Paraguay"],["PAR14","Matias Galarza Fonda",0,"Paraguay"],
+  ["PAR15","Julio Enciso",0,"Paraguay"],["PAR16","Alejandro Romero Gamarra",0,"Paraguay"],
+  ["PAR17","Miguel Almiron",0,"Paraguay"],["PAR18","Ramon Sosa",0,"Paraguay"],
+  ["PAR19","Angel Romero",0,"Paraguay"],["PAR20","Antonio Sanabria",0,"Paraguay"],
+  ["AUS1","Team Logo",1,"Australia"],["AUS2","Mathew Ryan",0,"Australia"],
+  ["AUS3","Joe Gauci",0,"Australia"],["AUS4","Harry Souttar",0,"Australia"],
+  ["AUS5","Alessandro Circati",0,"Australia"],["AUS6","Jordan Bos",0,"Australia"],
+  ["AUS7","Aziz Behich",0,"Australia"],["AUS8","Cameron Burgess",0,"Australia"],
+  ["AUS9","Lewis Miller",0,"Australia"],["AUS10","Milos Degenek",0,"Australia"],
+  ["AUS11","Jackson Irvine",0,"Australia"],["AUS12","Riley McGree",0,"Australia"],
+  ["AUS13","Team Photo",0,"Australia"],["AUS14","Aiden O'Neill",0,"Australia"],
+  ["AUS15","Connor Metcalfe",0,"Australia"],["AUS16","Patrick Yazbek",0,"Australia"],
+  ["AUS17","Craig Goodwin",0,"Australia"],["AUS18","Kusini Vengi",0,"Australia"],
+  ["AUS19","Nestory Irankunda",0,"Australia"],["AUS20","Mohamed Toure",0,"Australia"],
+  ["TUR1","Team Logo",1,"Turkiye"],["TUR2","Ugurcan Cakir",0,"Turkiye"],
+  ["TUR3","Mert Muldur",0,"Turkiye"],["TUR4","Zeki Celik",0,"Turkiye"],
+  ["TUR5","Abdulkerim Bardakci",0,"Turkiye"],["TUR6","Caglar Soyuncu",0,"Turkiye"],
+  ["TUR7","Merih Demiral",0,"Turkiye"],["TUR8","Ferdi Kadioglu",0,"Turkiye"],
+  ["TUR9","Kaan Ayhan",0,"Turkiye"],["TUR10","Ismail Yuksek",0,"Turkiye"],
+  ["TUR11","Hakan Calhanoglu",0,"Turkiye"],["TUR12","Orkun Kokcu",0,"Turkiye"],
+  ["TUR13","Team Photo",0,"Turkiye"],["TUR14","Arda Guler",0,"Turkiye"],
+  ["TUR15","Irfan Can Kahveci",0,"Turkiye"],["TUR16","Yunus Akgun",0,"Turkiye"],
+  ["TUR17","Can Uzun",0,"Turkiye"],["TUR18","Baris Alper Yilmaz",0,"Turkiye"],
+  ["TUR19","Kerem Akturkoglu",0,"Turkiye"],["TUR20","Kenan Yildiz",0,"Turkiye"],
+  ["GER1","Team Logo",1,"Germany"],["GER2","Marc-Andre ter Stegen",0,"Germany"],
+  ["GER3","Jonathan Tah",0,"Germany"],["GER4","David Raum",0,"Germany"],
+  ["GER5","Nico Schlotterbeck",0,"Germany"],["GER6","Antonio Rudiger",0,"Germany"],
+  ["GER7","Waldemar Anton",0,"Germany"],["GER8","Ridle Baku",0,"Germany"],
+  ["GER9","Maximilian Mittelstadt",0,"Germany"],["GER10","Joshua Kimmich",0,"Germany"],
+  ["GER11","Florian Wirtz",0,"Germany"],["GER12","Felix Nmecha",0,"Germany"],
+  ["GER13","Team Photo",0,"Germany"],["GER14","Leon Goretzka",0,"Germany"],
+  ["GER15","Jamal Musiala",0,"Germany"],["GER16","Serge Gnabry",0,"Germany"],
+  ["GER17","Kai Havertz",0,"Germany"],["GER18","Leroy Sane",0,"Germany"],
+  ["GER19","Karim Adeyemi",0,"Germany"],["GER20","Nick Woltemade",0,"Germany"],
+  ["CUW1","Team Logo",1,"Curacao"],["CUW2","Eloy Room",0,"Curacao"],
+  ["CUW3","Armando Obispo",0,"Curacao"],["CUW4","Sherel Floranus",0,"Curacao"],
+  ["CUW5","Jurien Gaari",0,"Curacao"],["CUW6","Joshua Brenet",0,"Curacao"],
+  ["CUW7","Roshon Van Eijma",0,"Curacao"],["CUW8","Shurandy Sambo",0,"Curacao"],
+  ["CUW9","Livano Comenencia",0,"Curacao"],["CUW10","Godfried Roemeratoe",0,"Curacao"],
+  ["CUW11","Juninho Bacuna",0,"Curacao"],["CUW12","Leandro Bacuna",0,"Curacao"],
+  ["CUW13","Team Photo",0,"Curacao"],["CUW14","Tahith Chong",0,"Curacao"],
+  ["CUW15","Kenji Gorre",0,"Curacao"],["CUW16","Jearl Margaritha",0,"Curacao"],
+  ["CUW17","Jurgen Locadia",0,"Curacao"],["CUW18","Jeremy Antonisse",0,"Curacao"],
+  ["CUW19","Gervane Kastaneer",0,"Curacao"],["CUW20","Sontje Hansen",0,"Curacao"],
+  ["CIV1","Team Logo",1,"Ivory Coast"],["CIV2","Yahia Fofana",0,"Ivory Coast"],
+  ["CIV3","Ghislain Konan",0,"Ivory Coast"],["CIV4","Wilfried Singo",0,"Ivory Coast"],
+  ["CIV5","Odilon Kossounou",0,"Ivory Coast"],["CIV6","Evan Ndicka",0,"Ivory Coast"],
+  ["CIV7","Willy Boly",0,"Ivory Coast"],["CIV8","Emmanuel Agbadou",0,"Ivory Coast"],
+  ["CIV9","Ousmane Diomande",0,"Ivory Coast"],["CIV10","Franck Kessie",0,"Ivory Coast"],
+  ["CIV11","Seko Fofana",0,"Ivory Coast"],["CIV12","Ibrahim Sangare",0,"Ivory Coast"],
+  ["CIV13","Team Photo",0,"Ivory Coast"],["CIV14","Jean-Philippe Gbamin",0,"Ivory Coast"],
+  ["CIV15","Amad Diallo",0,"Ivory Coast"],["CIV16","Sebastien Haller",0,"Ivory Coast"],
+  ["CIV17","Simon Adingra",0,"Ivory Coast"],["CIV18","Yan Diomande",0,"Ivory Coast"],
+  ["CIV19","Evann Guessand",0,"Ivory Coast"],["CIV20","Oumar Diakite",0,"Ivory Coast"],
+  ["ECU1","Team Logo",1,"Ecuador"],["ECU2","Hernan Galindez",0,"Ecuador"],
+  ["ECU3","Gonzalo Valle",0,"Ecuador"],["ECU4","Piero Hincapie",0,"Ecuador"],
+  ["ECU5","Pervis Estupinán",0,"Ecuador"],["ECU6","Willian Pacho",0,"Ecuador"],
+  ["ECU7","Angelo Preciado",0,"Ecuador"],["ECU8","Joel Ordonez",0,"Ecuador"],
+  ["ECU9","Moises Caicedo",0,"Ecuador"],["ECU10","Alan Franco",0,"Ecuador"],
+  ["ECU11","Kendry Paez",0,"Ecuador"],["ECU12","Pedro Vite",0,"Ecuador"],
+  ["ECU13","Team Photo",0,"Ecuador"],["ECU14","John Yeboah",0,"Ecuador"],
+  ["ECU15","Leonardo Campana",0,"Ecuador"],["ECU16","Gonzalo Plata",0,"Ecuador"],
+  ["ECU17","Nilson Angulo",0,"Ecuador"],["ECU18","Alan Minda",0,"Ecuador"],
+  ["ECU19","Kevin Rodriguez",0,"Ecuador"],["ECU20","Enner Valencia",0,"Ecuador"],
+  ["NED1","Team Logo",1,"Netherlands"],["NED2","Bart Verbruggen",0,"Netherlands"],
+  ["NED3","Virgil van Dijk",0,"Netherlands"],["NED4","Micky van de Ven",0,"Netherlands"],
+  ["NED5","Jurrien Timber",0,"Netherlands"],["NED6","Denzel Dumfries",0,"Netherlands"],
+  ["NED7","Nathan Ake",0,"Netherlands"],["NED8","Jeremie Frimpong",0,"Netherlands"],
+  ["NED9","Jan Paul van Hecke",0,"Netherlands"],["NED10","Tijjani Reijnders",0,"Netherlands"],
+  ["NED11","Ryan Gravenberch",0,"Netherlands"],["NED12","Teun Koopmeiners",0,"Netherlands"],
+  ["NED13","Team Photo",0,"Netherlands"],["NED14","Frenkie de Jong",0,"Netherlands"],
+  ["NED15","Xavi Simons",0,"Netherlands"],["NED16","Justin Kluivert",0,"Netherlands"],
+  ["NED17","Memphis Depay",0,"Netherlands"],["NED18","Donyell Malen",0,"Netherlands"],
+  ["NED19","Wout Weghorst",0,"Netherlands"],["NED20","Cody Gakpo",0,"Netherlands"],
+  ["JPN1","Team Logo",1,"Japan"],["JPN2","Zion Suzuki",0,"Japan"],
+  ["JPN3","Henry Heroki Mochizuki",0,"Japan"],["JPN4","Ayumu Seko",0,"Japan"],
+  ["JPN5","Junnosuke Suzuki",0,"Japan"],["JPN6","Shogo Taniguchi",0,"Japan"],
+  ["JPN7","Tsuyoshi Watanabe",0,"Japan"],["JPN8","Kaishu Sano",0,"Japan"],
+  ["JPN9","Yuki Soma",0,"Japan"],["JPN10","Ao Tanaka",0,"Japan"],
+  ["JPN11","Daichi Kamada",0,"Japan"],["JPN12","Takefusa Kubo",0,"Japan"],
+  ["JPN13","Team Photo",0,"Japan"],["JPN14","Ritsu Doan",0,"Japan"],
+  ["JPN15","Keito Nakamura",0,"Japan"],["JPN16","Takumi Minamino",0,"Japan"],
+  ["JPN17","Shuto Machino",0,"Japan"],["JPN18","Junya Ito",0,"Japan"],
+  ["JPN19","Koki Ogawa",0,"Japan"],["JPN20","Ayase Ueda",0,"Japan"],
+  ["SWE1","Team Logo",1,"Sweden"],["SWE2","Victor Johansson",0,"Sweden"],
+  ["SWE3","Isak Hien",0,"Sweden"],["SWE4","Gabriel Gudmundsson",0,"Sweden"],
+  ["SWE5","Emil Holm",0,"Sweden"],["SWE6","Victor Nilsson Lindelof",0,"Sweden"],
+  ["SWE7","Gustaf Lagerbielke",0,"Sweden"],["SWE8","Lucas Bergvall",0,"Sweden"],
+  ["SWE9","Hugo Larsson",0,"Sweden"],["SWE10","Jesper Karlstrom",0,"Sweden"],
+  ["SWE11","Yasin Ayari",0,"Sweden"],["SWE12","Mattias Svanberg",0,"Sweden"],
+  ["SWE13","Team Photo",0,"Sweden"],["SWE14","Daniel Svensson",0,"Sweden"],
+  ["SWE15","Ken Sema",0,"Sweden"],["SWE16","Roony Bardghji",0,"Sweden"],
+  ["SWE17","Dejan Kulusevski",0,"Sweden"],["SWE18","Anthony Elanga",0,"Sweden"],
+  ["SWE19","Alexander Isak",0,"Sweden"],["SWE20","Viktor Gyokeres",0,"Sweden"],
+  ["TUN1","Team Logo",1,"Tunisia"],["TUN2","Bechir Ben Said",0,"Tunisia"],
+  ["TUN3","Aymen Dahmen",0,"Tunisia"],["TUN4","Yan Valery",0,"Tunisia"],
+  ["TUN5","Montassar Talbi",0,"Tunisia"],["TUN6","Yassine Meriah",0,"Tunisia"],
+  ["TUN7","Ali Abdi",0,"Tunisia"],["TUN8","Dylan Bronn",0,"Tunisia"],
+  ["TUN9","Ellyes Skhiri",0,"Tunisia"],["TUN10","Aissa Laidouni",0,"Tunisia"],
+  ["TUN11","Ferjani Sassi",0,"Tunisia"],["TUN12","Mohamed Ali Ben Romdhane",0,"Tunisia"],
+  ["TUN13","Team Photo",0,"Tunisia"],["TUN14","Hannibal Mejbri",0,"Tunisia"],
+  ["TUN15","Elias Achouri",0,"Tunisia"],["TUN16","Elias Saad",0,"Tunisia"],
+  ["TUN17","Hazem Mastouri",0,"Tunisia"],["TUN18","Ismael Gharbi",0,"Tunisia"],
+  ["TUN19","Sayfallah Ltaief",0,"Tunisia"],["TUN20","Naim Sliti",0,"Tunisia"],
+  ["BEL1","Team Logo",1,"Belgium"],["BEL2","Thibaut Courtois",0,"Belgium"],
+  ["BEL3","Arthur Theate",0,"Belgium"],["BEL4","Timothy Castagne",0,"Belgium"],
+  ["BEL5","Zeno Debast",0,"Belgium"],["BEL6","Brandon Mechele",0,"Belgium"],
+  ["BEL7","Maxim De Cuyper",0,"Belgium"],["BEL8","Thomas Meunier",0,"Belgium"],
+  ["BEL9","Youri Tielemans",0,"Belgium"],["BEL10","Amadou Onana",0,"Belgium"],
+  ["BEL11","Nicolas Raskin",0,"Belgium"],["BEL12","Alexis Saelemaekers",0,"Belgium"],
+  ["BEL13","Team Photo",0,"Belgium"],["BEL14","Hans Vanaken",0,"Belgium"],
+  ["BEL15","Kevin De Bruyne",0,"Belgium"],["BEL16","Jeremy Doku",0,"Belgium"],
+  ["BEL17","Charles De Ketelaere",0,"Belgium"],["BEL18","Leandro Trossard",0,"Belgium"],
+  ["BEL19","Lois Openda",0,"Belgium"],["BEL20","Romelu Lukaku",0,"Belgium"],
+  ["EGY1","Team Logo",1,"Egypt"],["EGY2","Mohamed El Shenawy",0,"Egypt"],
+  ["EGY3","Mohamed Hany",0,"Egypt"],["EGY4","Mohamed Hamdy",0,"Egypt"],
+  ["EGY5","Yasser Ibrahim",0,"Egypt"],["EGY6","Khaled Sobhi",0,"Egypt"],
+  ["EGY7","Ramy Rabia",0,"Egypt"],["EGY8","Hossam Abdelmaguid",0,"Egypt"],
+  ["EGY9","Ahmed Fatouh",0,"Egypt"],["EGY10","Marwan Attia",0,"Egypt"],
+  ["EGY11","Zizo",0,"Egypt"],["EGY12","Hamdy Fathy",0,"Egypt"],
+  ["EGY13","Team Photo",0,"Egypt"],["EGY14","Mohamed Lasheen",0,"Egypt"],
+  ["EGY15","Emam Ashour",0,"Egypt"],["EGY16","Osama Faisal",0,"Egypt"],
+  ["EGY17","Mohamed Salah",0,"Egypt"],["EGY18","Mostafa Mohamed",0,"Egypt"],
+  ["EGY19","Trezeguet",0,"Egypt"],["EGY20","Omar Marmoush",0,"Egypt"],
+  ["IRN1","Team Logo",1,"Iran"],["IRN2","Alireza Beiranvand",0,"Iran"],
+  ["IRN3","Morteza Pouraliganji",0,"Iran"],["IRN4","Ehsan Hajsafi",0,"Iran"],
+  ["IRN5","Milad Mohammadi",0,"Iran"],["IRN6","Shojae Khalilzadeh",0,"Iran"],
+  ["IRN7","Ramin Rezaeian",0,"Iran"],["IRN8","Hossein Kanaani",0,"Iran"],
+  ["IRN9","Sadegh Moharrami",0,"Iran"],["IRN10","Saleh Hardani",0,"Iran"],
+  ["IRN11","Saeed Ezatolahi",0,"Iran"],["IRN12","Saman Ghoddos",0,"Iran"],
+  ["IRN13","Team Photo",0,"Iran"],["IRN14","Omid Noorafkan",0,"Iran"],
+  ["IRN15","Roozbeh Cheshmi",0,"Iran"],["IRN16","Mohammad Mohebi",0,"Iran"],
+  ["IRN17","Sardar Azmoun",0,"Iran"],["IRN18","Mehdi Taremi",0,"Iran"],
+  ["IRN19","Alireza Jahanbakhsh",0,"Iran"],["IRN20","Ali Gholizadeh",0,"Iran"],
+  ["NZL1","Team Logo",1,"New Zealand"],["NZL2","Max Crocombe Payne",0,"New Zealand"],
+  ["NZL3","Alex Paulsen",0,"New Zealand"],["NZL4","Michael Boxall",0,"New Zealand"],
+  ["NZL5","Liberato Cacace",0,"New Zealand"],["NZL6","Tim Payne",0,"New Zealand"],
+  ["NZL7","Tyler Bindon",0,"New Zealand"],["NZL8","Francis de Vries",0,"New Zealand"],
+  ["NZL9","Finn Surman",0,"New Zealand"],["NZL10","Joe Bell",0,"New Zealand"],
+  ["NZL11","Sarpreet Singh",0,"New Zealand"],["NZL12","Ryan Thomas",0,"New Zealand"],
+  ["NZL13","Team Photo",0,"New Zealand"],["NZL14","Matthew Garbett",0,"New Zealand"],
+  ["NZL15","Marko Stamenic",0,"New Zealand"],["NZL16","Ben Old",0,"New Zealand"],
+  ["NZL17","Chris Wood",0,"New Zealand"],["NZL18","Elijah Just",0,"New Zealand"],
+  ["NZL19","Callum McCowatt",0,"New Zealand"],["NZL20","Kosta Barbarouses",0,"New Zealand"],
+  ["ESP1","Team Logo",1,"Spain"],["ESP2","Unai Simon",0,"Spain"],
+  ["ESP3","Robin Le Normand",0,"Spain"],["ESP4","Aymeric Laporte",0,"Spain"],
+  ["ESP5","Dean Huijsen",0,"Spain"],["ESP6","Pedro Porro",0,"Spain"],
+  ["ESP7","Dani Carvajal",0,"Spain"],["ESP8","Marc Cucurella",0,"Spain"],
+  ["ESP9","Martin Zubimendi",0,"Spain"],["ESP10","Rodri",0,"Spain"],
+  ["ESP11","Pedri",0,"Spain"],["ESP12","Fabian Ruiz",0,"Spain"],
+  ["ESP13","Team Photo",0,"Spain"],["ESP14","Mikel Merino",0,"Spain"],
+  ["ESP15","Lamine Yamal",0,"Spain"],["ESP16","Dani Olmo",0,"Spain"],
+  ["ESP17","Nico Williams",0,"Spain"],["ESP18","Ferran Torres",0,"Spain"],
+  ["ESP19","Alvaro Morata",0,"Spain"],["ESP20","Mikel Oyarzabal",0,"Spain"],
+  ["CPV1","Team Logo",1,"Cape Verde"],["CPV2","Vozinha",0,"Cape Verde"],
+  ["CPV3","Logan Costa",0,"Cape Verde"],["CPV4","Pico",0,"Cape Verde"],
+  ["CPV5","Diney",0,"Cape Verde"],["CPV6","Steven Moreira",0,"Cape Verde"],
+  ["CPV7","Wagner Pina",0,"Cape Verde"],["CPV8","Joao Paulo",0,"Cape Verde"],
+  ["CPV9","Yannick Semedo",0,"Cape Verde"],["CPV10","Kevin Pina",0,"Cape Verde"],
+  ["CPV11","Patrick Andrade",0,"Cape Verde"],["CPV12","Jamiro Monteiro",0,"Cape Verde"],
+  ["CPV13","Team Photo",0,"Cape Verde"],["CPV14","Deroy Duarte",0,"Cape Verde"],
+  ["CPV15","Garry Rodrigues",0,"Cape Verde"],["CPV16","Jovane Cabral",0,"Cape Verde"],
+  ["CPV17","Ryan Mendes",0,"Cape Verde"],["CPV18","Dailon Livramento",0,"Cape Verde"],
+  ["CPV19","Willy Semedo",0,"Cape Verde"],["CPV20","Bebe",0,"Cape Verde"],
+  ["KSA1","Team Logo",1,"Saudi Arabia"],["KSA2","Nawaf Alaqidi",0,"Saudi Arabia"],
+  ["KSA3","Abdulrahman Al-Sanbi",0,"Saudi Arabia"],["KSA4","Saud Abdulhamid",0,"Saudi Arabia"],
+  ["KSA5","Nawaf Bouwashl",0,"Saudi Arabia"],["KSA6","Jihad Thakri",0,"Saudi Arabia"],
+  ["KSA7","Moteb Al-Harbi",0,"Saudi Arabia"],["KSA8","Hassan Altambakti",0,"Saudi Arabia"],
+  ["KSA9","Musab Aljuwayr",0,"Saudi Arabia"],["KSA10","Ziyad Aljohani",0,"Saudi Arabia"],
+  ["KSA11","Abdullah Alkhaibari",0,"Saudi Arabia"],["KSA12","Nasser Aldawsari",0,"Saudi Arabia"],
+  ["KSA13","Team Photo",0,"Saudi Arabia"],["KSA14","Saleh Abu Alshamat",0,"Saudi Arabia"],
+  ["KSA15","Marwan Alsahafi",0,"Saudi Arabia"],["KSA16","Salem Aldawsari",0,"Saudi Arabia"],
+  ["KSA17","Abdulrahman Al-Aboud",0,"Saudi Arabia"],["KSA18","Feras Akbrikan",0,"Saudi Arabia"],
+  ["KSA19","Saleh Alshehri",0,"Saudi Arabia"],["KSA20","Abdullah Al-Hamdan",0,"Saudi Arabia"],
+  ["URU1","Team Logo",1,"Uruguay"],["URU2","Sergio Rochet",0,"Uruguay"],
+  ["URU3","Santiago Mele",0,"Uruguay"],["URU4","Ronald Araujo",0,"Uruguay"],
+  ["URU5","Jose Maria Gimenez",0,"Uruguay"],["URU6","Sebastian Caceres",0,"Uruguay"],
+  ["URU7","Mathias Olivera",0,"Uruguay"],["URU8","Guillermo Varela",0,"Uruguay"],
+  ["URU9","Nahitan Nandez",0,"Uruguay"],["URU10","Federico Valverde",0,"Uruguay"],
+  ["URU11","Giorgian De Arrascaeta",0,"Uruguay"],["URU12","Rodrigo Bentancur",0,"Uruguay"],
+  ["URU13","Team Photo",0,"Uruguay"],["URU14","Manuel Ugarte",0,"Uruguay"],
+  ["URU15","Nicolas de la Cruz",0,"Uruguay"],["URU16","Maxi Araujo",0,"Uruguay"],
+  ["URU17","Darwin Nunez",0,"Uruguay"],["URU18","Federico Vinas",0,"Uruguay"],
+  ["URU19","Rodrigo Aguirre",0,"Uruguay"],["URU20","Facundo Pellistri",0,"Uruguay"],
+  ["FRA1","Team Logo",1,"France"],["FRA2","Mike Maignan",0,"France"],
+  ["FRA3","Theo Hernandez",0,"France"],["FRA4","William Saliba",0,"France"],
+  ["FRA5","Jules Kounde",0,"France"],["FRA6","Ibrahima Konate",0,"France"],
+  ["FRA7","Dayot Upamecano",0,"France"],["FRA8","Lucas Digne",0,"France"],
+  ["FRA9","Aurelien Tchouameni",0,"France"],["FRA10","Eduardo Camavinga",0,"France"],
+  ["FRA11","Manu Kone",0,"France"],["FRA12","Adrien Rabiot",0,"France"],
+  ["FRA13","Team Photo",0,"France"],["FRA14","Michael Olise",0,"France"],
+  ["FRA15","Ousmane Dembele",0,"France"],["FRA16","Bradley Barcola",0,"France"],
+  ["FRA17","Desire Doue",0,"France"],["FRA18","Kingsley Coman",0,"France"],
+  ["FRA19","Hugo Ekitike",0,"France"],["FRA20","Kylian Mbappe",0,"France"],
+  ["SEN1","Team Logo",1,"Senegal"],["SEN2","Edouard Mendy",0,"Senegal"],
+  ["SEN3","Yehvann Diouf",0,"Senegal"],["SEN4","Moussa Niakhate",0,"Senegal"],
+  ["SEN5","Abdoulaye Seck",0,"Senegal"],["SEN6","Ismail Jakobs",0,"Senegal"],
+  ["SEN7","El Hadji Malick Diouf",0,"Senegal"],["SEN8","Kalidou Koulibaly",0,"Senegal"],
+  ["SEN9","Idrissa Gana Gueye",0,"Senegal"],["SEN10","Pape Matar Sarr",0,"Senegal"],
+  ["SEN11","Pape Gueye",0,"Senegal"],["SEN12","Habib Diarra",0,"Senegal"],
+  ["SEN13","Team Photo",0,"Senegal"],["SEN14","Lamine Camara",0,"Senegal"],
+  ["SEN15","Sadio Mane",0,"Senegal"],["SEN16","Ismaila Sarr",0,"Senegal"],
+  ["SEN17","Boulaye Dia",0,"Senegal"],["SEN18","Iliman Ndiaye",0,"Senegal"],
+  ["SEN19","Nicolas Jackson",0,"Senegal"],["SEN20","Krepin Diatta",0,"Senegal"],
+  ["IRQ1","Team Logo",1,"Iraq"],["IRQ2","Jalal Hassan",0,"Iraq"],
+  ["IRQ3","Rebin Sulaka",0,"Iraq"],["IRQ4","Hussein Ali",0,"Iraq"],
+  ["IRQ5","Akam Hashem",0,"Iraq"],["IRQ6","Merchas Doski",0,"Iraq"],
+  ["IRQ7","Zaid Tahseen",0,"Iraq"],["IRQ8","Manaf Younis",0,"Iraq"],
+  ["IRQ9","Zidane Iqbal",0,"Iraq"],["IRQ10","Amir Al-Ammari",0,"Iraq"],
+  ["IRQ11","Ibrahim Bavesh",0,"Iraq"],["IRQ12","Ali Jasim",0,"Iraq"],
+  ["IRQ13","Team Photo",0,"Iraq"],["IRQ14","Youssef Amyn",0,"Iraq"],
+  ["IRQ15","Aimar Sher",0,"Iraq"],["IRQ16","Marko Farji",0,"Iraq"],
+  ["IRQ17","Osama Rashid",0,"Iraq"],["IRQ18","Ali Al-Hamadi",0,"Iraq"],
+  ["IRQ19","Aymen Hussein",0,"Iraq"],["IRQ20","Mohanad Ali",0,"Iraq"],
+  ["NOR1","Team Logo",1,"Norway"],["NOR2","Orjan Nyland",0,"Norway"],
+  ["NOR3","Julian Ryerson",0,"Norway"],["NOR4","Leo Ostigard",0,"Norway"],
+  ["NOR5","Kristoffer Vassbakk Ajer",0,"Norway"],["NOR6","Marcus Holmgren Pedersen",0,"Norway"],
+  ["NOR7","David Moller Wolfe",0,"Norway"],["NOR8","Torbjorn Heggem",0,"Norway"],
+  ["NOR9","Morten Thorsby",0,"Norway"],["NOR10","Martin Odegaard",0,"Norway"],
+  ["NOR11","Sander Berge",0,"Norway"],["NOR12","Andreas Schjelderup",0,"Norway"],
+  ["NOR13","Team Photo",0,"Norway"],["NOR14","Patrick Berg",0,"Norway"],
+  ["NOR15","Erling Haaland",0,"Norway"],["NOR16","Alexander Sorloth",0,"Norway"],
+  ["NOR17","Aron Donnum",0,"Norway"],["NOR18","Jorgen Strand Larsen",0,"Norway"],
+  ["NOR19","Antonio Nusa",0,"Norway"],["NOR20","Oscar Bobb",0,"Norway"],
+  ["ARG1","Team Logo",1,"Argentina"],["ARG2","Emiliano Martinez",0,"Argentina"],
+  ["ARG3","Nahuel Molina",0,"Argentina"],["ARG4","Cristian Romero",0,"Argentina"],
+  ["ARG5","Nicolas Otamendi",0,"Argentina"],["ARG6","Nicolas Tagliafico",0,"Argentina"],
+  ["ARG7","Leonardo Balerdi",0,"Argentina"],["ARG8","Enzo Fernandez",0,"Argentina"],
+  ["ARG9","Alexis Mac Allister",0,"Argentina"],["ARG10","Rodrigo De Paul",0,"Argentina"],
+  ["ARG11","Exequiel Palacios",0,"Argentina"],["ARG12","Leandro Paredes",0,"Argentina"],
+  ["ARG13","Team Photo",0,"Argentina"],["ARG14","Nico Paz",0,"Argentina"],
+  ["ARG15","Franco Mastantuono",0,"Argentina"],["ARG16","Nico Gonzalez",0,"Argentina"],
+  ["ARG17","Lionel Messi",0,"Argentina"],["ARG18","Lautaro Martinez",0,"Argentina"],
+  ["ARG19","Julian Alvarez",0,"Argentina"],["ARG20","Giuliano Simeone",0,"Argentina"],
+  ["ALG1","Team Logo",1,"Algeria"],["ALG2","Alexis Guendouz",0,"Algeria"],
+  ["ALG3","Ramy Bensebaini",0,"Algeria"],["ALG4","Youcef Atal",0,"Algeria"],
+  ["ALG5","Rayan Ait-Nouri",0,"Algeria"],["ALG6","Mohamed Amine Tougai",0,"Algeria"],
+  ["ALG7","Aissa Mandi",0,"Algeria"],["ALG8","Ismael Bennacer",0,"Algeria"],
+  ["ALG9","Houssem Aquar",0,"Algeria"],["ALG10","Hicham Boudaoui",0,"Algeria"],
+  ["ALG11","Ramiz Zerrouki",0,"Algeria"],["ALG12","Nabil Bentalab",0,"Algeria"],
+  ["ALG13","Team Photo",0,"Algeria"],["ALG14","Fares Chaibi",0,"Algeria"],
+  ["ALG15","Riyad Mahrez",0,"Algeria"],["ALG16","Said Benrahma",0,"Algeria"],
+  ["ALG17","Anis Hadj Moussa",0,"Algeria"],["ALG18","Amine Gouiri",0,"Algeria"],
+  ["ALG19","Baghdad Bounedjah",0,"Algeria"],["ALG20","Mohammed Amoura",0,"Algeria"],
+  ["AUT1","Team Logo",1,"Austria"],["AUT2","Alexander Schlager",0,"Austria"],
+  ["AUT3","Patrick Pentz",0,"Austria"],["AUT4","David Alaba",0,"Austria"],
+  ["AUT5","Kevin Danso",0,"Austria"],["AUT6","Philipp Lienhart",0,"Austria"],
+  ["AUT7","Stefan Posch",0,"Austria"],["AUT8","Phillipp Mwene",0,"Austria"],
+  ["AUT9","Alexander Prass",0,"Austria"],["AUT10","Xaver Schlager",0,"Austria"],
+  ["AUT11","Marcel Sabitzer",0,"Austria"],["AUT12","Konrad Laimer",0,"Austria"],
+  ["AUT13","Team Photo",0,"Austria"],["AUT14","Florian Grillitsch",0,"Austria"],
+  ["AUT15","Nicolas Seiwald",0,"Austria"],["AUT16","Romano Schmid",0,"Austria"],
+  ["AUT17","Patrick Wimmer",0,"Austria"],["AUT18","Christoph Baumgartner",0,"Austria"],
+  ["AUT19","Michael Gregoritsch",0,"Austria"],["AUT20","Marko Arnautovic",0,"Austria"],
+  ["JOR1","Team Logo",1,"Jordan"],["JOR2","Yazeed Abulaila",0,"Jordan"],
+  ["JOR3","Ihsan Haddad",0,"Jordan"],["JOR4","Mohammad Abu Hashish",0,"Jordan"],
+  ["JOR5","Yazan Al-Arab",0,"Jordan"],["JOR6","Abdallah Nasib",0,"Jordan"],
+  ["JOR7","Saleem Obaid",0,"Jordan"],["JOR8","Mohammad Abualnadi",0,"Jordan"],
+  ["JOR9","Ibrahim Saadeh",0,"Jordan"],["JOR10","Nizar Al-Rashdan",0,"Jordan"],
+  ["JOR11","Noor Al-Rawabdeh",0,"Jordan"],["JOR12","Mohannad Abu Taha",0,"Jordan"],
+  ["JOR13","Team Photo",0,"Jordan"],["JOR14","Amer Jamous",0,"Jordan"],
+  ["JOR15","Musa Al-Taamari",0,"Jordan"],["JOR16","Yazan Al-Naimat",0,"Jordan"],
+  ["JOR17","Mahmoud Al-Mardi",0,"Jordan"],["JOR18","Ali Olwan",0,"Jordan"],
+  ["JOR19","Mohammad Abu Zrayq",0,"Jordan"],["JOR20","Ibrahim Sabra",0,"Jordan"],
+  ["POR1","Team Logo",1,"Portugal"],["POR2","Diogo Costa",0,"Portugal"],
+  ["POR3","Jose Sa",0,"Portugal"],["POR4","Ruben Dias",0,"Portugal"],
+  ["POR5","Joao Cancelo",0,"Portugal"],["POR6","Diogo Dalot",0,"Portugal"],
+  ["POR7","Nuno Mendes",0,"Portugal"],["POR8","Antonio Silva",0,"Portugal"],
+  ["POR9","Pepe",0,"Portugal"],["POR10","Joao Neves",0,"Portugal"],
+  ["POR11","Bernardo Silva",0,"Portugal"],["POR12","Bruno Fernandes",0,"Portugal"],
+  ["POR13","Team Photo",0,"Portugal"],["POR14","Vitinha",0,"Portugal"],
+  ["POR15","Cristiano Ronaldo",0,"Portugal"],["POR16","Rafael Leao",0,"Portugal"],
+  ["POR17","Joao Felix",0,"Portugal"],["POR18","Pedro Neto",0,"Portugal"],
+  ["POR19","Goncalo Ramos",0,"Portugal"],["POR20","Antonio Neves",0,"Portugal"],
+  ["COD1","Team Logo",1,"Congo DR"],["COD2","Lionel Mpasi",0,"Congo DR"],
+  ["COD3","Aaron Wan-Bissaka",0,"Congo DR"],["COD4","Axel Tuanzebe",0,"Congo DR"],
+  ["COD5","Arthur Masuaku",0,"Congo DR"],["COD6","Chancel Mbemba",0,"Congo DR"],
+  ["COD7","Joris Kayembe",0,"Congo DR"],["COD8","Charles Pickel",0,"Congo DR"],
+  ["COD9","Ngal'ayel Mukau",0,"Congo DR"],["COD10","Edo Kayembe",0,"Congo DR"],
+  ["COD11","Samuel Moutoussamy",0,"Congo DR"],["COD12","Noah Sadiki",0,"Congo DR"],
+  ["COD13","Team Photo",0,"Congo DR"],["COD14","Theo Bongonda",0,"Congo DR"],
+  ["COD15","Meschak Elia",0,"Congo DR"],["COD16","Yoane Wissa",0,"Congo DR"],
+  ["COD17","Brian Cipenga",0,"Congo DR"],["COD18","Fiston Mayele",0,"Congo DR"],
+  ["COD19","Cedric Bakambu",0,"Congo DR"],["COD20","Nathanael Mbuku",0,"Congo DR"],
+  ["UZB1","Team Logo",1,"Uzbekistan"],["UZB2","Utkir Yusupov",0,"Uzbekistan"],
+  ["UZB3","Farrukh Savfiev",0,"Uzbekistan"],["UZB4","Sherzod Nasrullaev",0,"Uzbekistan"],
+  ["UZB5","Umar Eshmurodov",0,"Uzbekistan"],["UZB6","Husniddin Aliqulov",0,"Uzbekistan"],
+  ["UZB7","Rustamjon Ashurmatov",0,"Uzbekistan"],["UZB8","Khojiakbar Alijonov",0,"Uzbekistan"],
+  ["UZB9","Abdukodir Khusanov",0,"Uzbekistan"],["UZB10","Odiljon Hamrobekov",0,"Uzbekistan"],
+  ["UZB11","Otabek Shukurov",0,"Uzbekistan"],["UZB12","Jamshid Iskanderov",0,"Uzbekistan"],
+  ["UZB13","Team Photo",0,"Uzbekistan"],["UZB14","Azizbek Turgunboev",0,"Uzbekistan"],
+  ["UZB15","Khojimat Erkinov",0,"Uzbekistan"],["UZB16","Eldor Shomurodov",0,"Uzbekistan"],
+  ["UZB17","Oston Urunov",0,"Uzbekistan"],["UZB18","Jaloliddin Masharipov",0,"Uzbekistan"],
+  ["UZB19","Igor Sergeev",0,"Uzbekistan"],["UZB20","Abbosbek Fayzullaev",0,"Uzbekistan"],
+  ["COL1","Team Logo",1,"Colombia"],["COL2","Camilo Vargas",0,"Colombia"],
+  ["COL3","Davinson Sanchez",0,"Colombia"],["COL4","Oscar Murillo",0,"Colombia"],
+  ["COL5","Yerry Mina",0,"Colombia"],["COL6","Daniel Munoz",0,"Colombia"],
+  ["COL7","Johan Mojica",0,"Colombia"],["COL8","Jhon Lucumi",0,"Colombia"],
+  ["COL9","Santiago Arias",0,"Colombia"],["COL10","Jefferson Lerma",0,"Colombia"],
+  ["COL11","Kevin Castano",0,"Colombia"],["COL12","Richard Rios",0,"Colombia"],
+  ["COL13","Team Photo",0,"Colombia"],["COL14","James Rodriguez",0,"Colombia"],
+  ["COL15","Juan Fernando Quintero",0,"Colombia"],["COL16","Jorge Carrascal",0,"Colombia"],
+  ["COL17","Jon Arias",0,"Colombia"],["COL18","Jhon Cordova",0,"Colombia"],
+  ["COL19","Luis Suarez",0,"Colombia"],["COL20","Luis Diaz",0,"Colombia"],
+  ["ENG1","Team Logo",1,"England"],["ENG2","Jordan Pickford",0,"England"],
+  ["ENG3","John Stones",0,"England"],["ENG4","Marc Guehi",0,"England"],
+  ["ENG5","Ezri Konsa",0,"England"],["ENG6","Trent Alexander-Arnold",0,"England"],
+  ["ENG7","Reece James",0,"England"],["ENG8","Dan Burn",0,"England"],
+  ["ENG9","Jordan Henderson",0,"England"],["ENG10","Declan Rice",0,"England"],
+  ["ENG11","Jude Bellingham",0,"England"],["ENG12","Cole Palmer",0,"England"],
+  ["ENG13","Team Photo",0,"England"],["ENG14","Morgan Rogers",0,"England"],
+  ["ENG15","Anthony Gordon",0,"England"],["ENG16","Phil Foden",0,"England"],
+  ["ENG17","Bukayo Saka",0,"England"],["ENG18","Harry Kane",0,"England"],
+  ["ENG19","Marcus Rashford",0,"England"],["ENG20","Ollie Watkins",0,"England"],
+  ["CRO1","Team Logo",1,"Croatia"],["CRO2","Dominik Livakovic",0,"Croatia"],
+  ["CRO3","Duje Caleta-Car",0,"Croatia"],["CRO4","Josko Gvardiol",0,"Croatia"],
+  ["CRO5","Josip Stanisic",0,"Croatia"],["CRO6","Luka Vuskovic",0,"Croatia"],
+  ["CRO7","Josip Sutalo",0,"Croatia"],["CRO8","Kristijan Jakic",0,"Croatia"],
+  ["CRO9","Luka Modric",0,"Croatia"],["CRO10","Mateo Kovacic",0,"Croatia"],
+  ["CRO11","Martin Baturina",0,"Croatia"],["CRO12","Lovro Majer",0,"Croatia"],
+  ["CRO13","Team Photo",0,"Croatia"],["CRO14","Mario Pasalic",0,"Croatia"],
+  ["CRO15","Petar Sucic",0,"Croatia"],["CRO16","Ivan Perisic",0,"Croatia"],
+  ["CRO17","Marco Pasalic",0,"Croatia"],["CRO18","Ante Budimir",0,"Croatia"],
+  ["CRO19","Andrej Kramaric",0,"Croatia"],["CRO20","Franjo Ivanovic",0,"Croatia"],
+  ["GHA1","Team Logo",1,"Ghana"],["GHA2","Lawrence Ati Zigi",0,"Ghana"],
+  ["GHA3","Tariq Lamptey",0,"Ghana"],["GHA4","Mohammed Salisu",0,"Ghana"],
+  ["GHA5","Alidu Seidu",0,"Ghana"],["GHA6","Alexander Djiku",0,"Ghana"],
+  ["GHA7","Gideon Mensah",0,"Ghana"],["GHA8","Caleb Yirenkyi",0,"Ghana"],
+  ["GHA9","Abdul Issahaku Fatawu",0,"Ghana"],["GHA10","Thomas Partey",0,"Ghana"],
+  ["GHA11","Salis Abdul Samed",0,"Ghana"],["GHA12","Kamaldeen Sulemana",0,"Ghana"],
+  ["GHA13","Team Photo",0,"Ghana"],["GHA14","Mohammed Kudus",0,"Ghana"],
+  ["GHA15","Inaki Williams",0,"Ghana"],["GHA16","Jordan Ayew",0,"Ghana"],
+  ["GHA17","Andrew Ayew",0,"Ghana"],["GHA18","Joseph Paintsil",0,"Ghana"],
+  ["GHA19","Osman Bukari",0,"Ghana"],["GHA20","Antoine Semenyo",0,"Ghana"],
+  ["PAN1","Team Logo",1,"Panama"],["PAN2","Orlando Mosquera",0,"Panama"],
+  ["PAN3","Luis Mejia",0,"Panama"],["PAN4","Fidel Escobar",0,"Panama"],
+  ["PAN5","Andres Andrade",0,"Panama"],["PAN6","Michael Amir Murillo",0,"Panama"],
+  ["PAN7","Eric Davis",0,"Panama"],["PAN8","Jose Cordoba",0,"Panama"],
+  ["PAN9","Cesar Blackman",0,"Panama"],["PAN10","Cristian Martinez",0,"Panama"],
+  ["PAN11","Anibal Godoy",0,"Panama"],["PAN12","Adalberto Carrasquilla",0,"Panama"],
+  ["PAN13","Team Photo",0,"Panama"],["PAN14","Edgar Barcenas",0,"Panama"],
+  ["PAN15","Carlos Harvey",0,"Panama"],["PAN16","Ismael Diaz",0,"Panama"],
+  ["PAN17","Jose Fajardo",0,"Panama"],["PAN18","Cecilio Waterman",0,"Panama"],
+  ["PAN19","Jose Luiz Rodriguez",0,"Panama"],["PAN20","Alberto Quintero",0,"Panama"],
+  ["FWC9","Italy 1934",1,"FIFA Museum"],["FWC10","Uruguay 1950",1,"FIFA Museum"],
+  ["FWC11","West Germany 1954",1,"FIFA Museum"],["FWC12","Brazil 1962",1,"FIFA Museum"],
+  ["FWC13","West Germany 1974",1,"FIFA Museum"],["FWC14","Argentina 1986",1,"FIFA Museum"],
+  ["FWC15","Brazil 1994",1,"FIFA Museum"],["FWC16","Brazil 2002",1,"FIFA Museum"],
+  ["FWC17","Spain 2010",1,"FIFA Museum"],["FWC18","Germany 2014",1,"FIFA Museum"],
+  ["FWC19","Argentina 2022",1,"FIFA Museum"]
+];
+
+var TOTAL = S.length; // should be 980
+var collected = {};
+
+function saveLocal() {
+  try { localStorage.setItem('panini2026', JSON.stringify(Object.keys(collected).map(Number))); } catch(e) {}
+}
+
+function loadLocal() {
+  try {
+    var raw = localStorage.getItem('panini2026');
+    if (raw) { var arr = JSON.parse(raw); for (var i = 0; i < arr.length; i++) collected[arr[i]] = 1; }
+  } catch(e) {}
+}
+var showMode = "sve";
+
+function updateHeader() {
+  var cnt = Object.keys(collected).length;
+  document.getElementById('score').innerHTML = cnt + ' <span>/ ' + TOTAL + '</span>';
+  var pct = Math.round(cnt / TOTAL * 100);
+  document.getElementById('progfill').style.width = pct + '%';
+  document.getElementById('pct').textContent = pct + '% kompletan album';
+}
+
+function render() {
+  var q = document.getElementById('srch').value.toLowerCase().trim();
+  var team = document.getElementById('tsel').value;
+  var list = [];
+  for (var i = 0; i < S.length; i++) {
+    var s = S[i];
+    var appN = i + 1;
+    if (team !== 'Sve' && s[3] !== team) continue;
+    if (showMode === 'imam' && !collected[appN]) continue;
+    if (showMode === 'nemam' && collected[appN]) continue;
+    if (q) {
+      var match = s[1].toLowerCase().indexOf(q) >= 0
+        || s[0].toLowerCase().indexOf(q) >= 0
+        || String(appN).indexOf(q) >= 0;
+      if (!match) continue;
+    }
+    list.push([appN, s[0], s[1], s[2], s[3]]);
+  }
+
+  document.getElementById('rcount').textContent = 'Prikazano: ' + list.length + ' sličica';
+
+  var html = '';
+  var lastTeam = '';
+  for (var j = 0; j < list.length; j++) {
+    var item = list[j];
+    var appNum = item[0], code = item[1], name = item[2], foil = item[3], tm = item[4];
+    var c = !!collected[appNum];
+    if (tm !== lastTeam && !q && team === 'Sve') {
+      html += '<div class="team-hdr">' + tm + '</div>';
+      lastTeam = tm;
+    }
+    var badgeCls = 'badge' + (foil ? ' foil' : '') + (c && !foil ? ' gc' : '');
+    html += '<div class="row' + (c ? ' got' : '') + '" onclick="toggle(' + appNum + ')">'
+      + '<div class="anum"><div class="n' + (c ? ' gc' : '') + '">' + appNum + '</div><div class="lbl">APP</div></div>'
+      + '<div class="' + badgeCls + '"><div class="code">' + code + '</div>' + (foil ? '<div class="fl">FOIL</div>' : '') + '</div>'
+      + '<div class="info"><div class="nm' + (c ? ' gc' : '') + '">' + name + '</div><div class="tm">' + tm + '</div></div>'
+      + '<div class="chk' + (c ? ' on' : '') + '"></div>'
+      + '</div>';
+  }
+  if (list.length === 0 && q) {
+    html = '<div style="text-align:center;padding:40px;color:#8a9bb0;">Nema rezultata za "<b>' + q + '</b>"</div>';
+  }
+  document.getElementById('list').innerHTML = html;
+}
+
+function toggle(n) {
+  if (collected[n]) delete collected[n]; else collected[n] = 1;
+  saveLocal();
+  updateHeader();
+  render();
+}
+
+function setMode(m, btn) {
+  showMode = m;
+  var btns = document.querySelectorAll('.fbt');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('on');
+  btn.classList.add('on');
+  render();
+}
+
+function toggleCfg() {
+  var el = document.getElementById('cfg');
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+  updateStickyTop();
+}
+
+function updateStickyTop() {
+  var hh = document.getElementById('hdr').offsetHeight;
+  var ch = 0;
+  var cfg = document.getElementById('cfg');
+  if (cfg.style.display === 'block') ch = cfg.offsetHeight;
+  document.getElementById('filters').style.top = (hh + ch) + 'px';
+}
+
+function showMsg(txt, ok) {
+  var el = document.getElementById('smsg');
+  el.style.display = 'block';
+  el.style.background = ok ? '#dcfce7' : '#fee2e2';
+  el.style.color = ok ? '#15803d' : '#b91c1c';
+  el.textContent = txt;
+  setTimeout(function() { el.style.display = 'none'; }, 3500);
+}
+
+var GFILE = 'panini_wc2026_tracker.json';
+
+function loadGist() {
+  var token = document.getElementById('gh-tok').value.trim();
+  var gid = document.getElementById('gh-gid').value.trim();
+  if (!token || !gid) { showMsg('Unesi i token i Gist ID', false); return; }
+  fetch('https://api.github.com/gists/' + gid, {
+    headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github+json' }
+  }).then(function(r) {
+    if (!r.ok) throw new Error('GitHub greska ' + r.status);
+    return r.json();
+  }).then(function(data) {
+    var raw = data.files && data.files[GFILE] && data.files[GFILE].content;
+    if (!raw) throw new Error('Fajl nije pronaden u Gist-u');
+    var parsed = JSON.parse(raw);
+    collected = {};
+    var arr = parsed.collected || [];
+    for (var i = 0; i < arr.length; i++) collected[arr[i]] = 1;
+    saveLocal(); updateHeader(); render();
+    showMsg('Ucitano ' + arr.length + ' slicica', true);
+  }).catch(function(e) { showMsg(e.message, false); });
+}
+
+function saveGist() {
+  var token = document.getElementById('gh-tok').value.trim();
+  var gid = document.getElementById('gh-gid').value.trim();
+  if (!token) { showMsg('Unesi GitHub token', false); return; }
+  var arr = Object.keys(collected).map(Number);
+  var payload = { collected: arr, savedAt: new Date().toISOString() };
+  var body = { description: 'Panini WC 2026 tracker', public: false, files: {} };
+  body.files[GFILE] = { content: JSON.stringify(payload, null, 2) };
+  fetch(gid ? 'https://api.github.com/gists/' + gid : 'https://api.github.com/gists', {
+    method: gid ? 'PATCH' : 'POST',
+    headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json', Accept: 'application/vnd.github+json' },
+    body: JSON.stringify(body)
+  }).then(function(r) {
+    if (!r.ok) throw new Error('Greska ' + r.status);
+    return r.json();
+  }).then(function(data) {
+    document.getElementById('gh-gid').value = data.id;
+    document.getElementById('gistshow').innerHTML = 'Gist ID: <b>' + data.id + '</b> (sacuvaj ovaj ID!)';
+    showMsg('Sacuvano! ' + arr.length + ' slicica', true);
+  }).catch(function(e) { showMsg(e.message, false); });
+}
+
+window.onload = function() {
+  loadLocal();
+  var sel = document.getElementById('tsel');
+  var teams = ['Sve'];
+  var seen = {};
+  for (var i = 0; i < S.length; i++) {
+    if (!seen[S[i][3]]) { teams.push(S[i][3]); seen[S[i][3]] = 1; }
+  }
+  for (var t = 0; t < teams.length; t++) {
+    var o = document.createElement('option');
+    o.value = teams[t]; o.textContent = teams[t];
+    sel.appendChild(o);
+  }
+  updateHeader();
+  render();
+};
+</script>
+</body>
+</html>
