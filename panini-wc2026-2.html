@@ -738,7 +738,7 @@ function render() {
 function toggle(n) {
   if (collected[n]) delete collected[n]; else collected[n] = 1;
   saveLocal();
-  saveGist();
+  saveGist(); // Ovo automatski snima na svaki klik
   updateHeader();
   render();
 }
@@ -765,25 +765,10 @@ function updateStickyTop() {
   document.getElementById('filters').style.top = (hh + ch) + 'px';
 }
 
-function showMsg(txt, ok) {
-  var el = document.getElementById('smsg');
-  el.style.display = 'block';
-  el.style.background = ok ? '#dcfce7' : '#fee2e2';
-  el.style.color = ok ? '#15803d' : '#b91c1c';
-  el.textContent = txt;
-  setTimeout(function() { el.style.display = 'none'; }, 3500);
-}
-
-var GFILE = 'panini_wc2026_tracker.json';
-
-// === VRAĆEN TVOJ ORIGINALNI KOD KOJI RADI ===
-const MOJ_TOKEN = "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"; 
-const MOJ_GIST_ID = "7f7aa6cba4d9eab8d2ebe27b14471ecb";     
-const GFILE = "panini_wc2026_tracker.json"; 
-
 function loadGist() {
-  var token = MOJ_TOKEN;
-  var gid = MOJ_GIST_ID;
+  // Upisano direktno pod navodnike:
+  var token = "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";
+  var gid = "7f7aa6cba4d9eab8d2ebe27b14471ecb";
   if (!token || !gid) { showMsg('Unesi i token i Gist ID', false); return; }
   fetch('https://github.com' + gid, {
     headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github+json' }
@@ -803,8 +788,9 @@ function loadGist() {
 }
 
 function saveGist() {
-  var token = MOJ_TOKEN;
-  var gid = MOJ_GIST_ID;
+  // Upisano direktno pod navodnike:
+  var token = "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";
+  var gid = "7f7aa6cba4d9eab8d2ebe27b14471ecb";
   if (!token) { showMsg('Unesi GitHub token', false); return; }
   var arr = Object.keys(collected).map(Number);
   var payload = { collected: arr, savedAt: new Date().toISOString() };
@@ -824,10 +810,6 @@ function saveGist() {
 
 window.onload = function() {
   loadLocal();
-  
-  if(document.getElementById('gh-tok')) document.getElementById('gh-tok').value = MOJ_TOKEN;
-  if(document.getElementById('gh-gid')) document.getElementById('gh-gid').value = MOJ_GIST_ID;
-  
   var sel = document.getElementById('tsel');
   var teams = ['Sve'];
   var seen = {};
@@ -842,11 +824,12 @@ window.onload = function() {
   updateHeader();
   render();
   
-  // Automatski povuci najnovije stanje sa GitHuba čim se stranica otvori
-  loadGist(); 
+  // Automatski ucitaj cim se otvori stranica
+  loadGist();
 };
 </script>
 </body>
 </html>
+
 
 
