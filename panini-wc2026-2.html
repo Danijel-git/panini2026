@@ -737,7 +737,7 @@ function render() {
 
 function toggle(n) {
   if (collected[n]) delete collected[n]; else collected[n] = 1;
-  saveLocal();
+  saveGist();
   updateHeader();
   render();
 }
