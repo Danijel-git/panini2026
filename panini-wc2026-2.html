@@ -776,9 +776,14 @@ function showMsg(txt, ok) {
 
 var GFILE = 'panini_wc2026_tracker.json';
 
+// === SVE JE SREĐENO, TVOJI PODACI SU SADA UNUTAR NAVODNIKA ===
+const MOJ_TOKEN = "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"; 
+const MOJ_GIST_ID = "7f7aa6cba4d9eab8d2ebe27b14471ecb";     
+const GFILE = "panini_wc2026_tracker.json"; 
+
 function loadGist() {
-  var token = document.getElementById('gh-tok').value.trim();
-  var gid = document.getElementById('gh-gid').value.trim();
+  var token = MOJ_TOKEN;
+  var gid = MOJ_GIST_ID;
   if (!token || !gid) { showMsg('Unesi i token i Gist ID', false); return; }
   fetch('https://api.github.com/gists/' + gid, {
     headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github+json' }
@@ -798,8 +803,8 @@ function loadGist() {
 }
 
 function saveGist() {
-  var token = document.getElementById('gh-tok').value.trim();
-  var gid = document.getElementById('gh-gid').value.trim();
+  var token = MOJ_TOKEN;
+  var gid = MOJ_GIST_ID;
   if (!token) { showMsg('Unesi GitHub token', false); return; }
   var arr = Object.keys(collected).map(Number);
   var payload = { collected: arr, savedAt: new Date().toISOString() };
@@ -813,14 +818,17 @@ function saveGist() {
     if (!r.ok) throw new Error('Greska ' + r.status);
     return r.json();
   }).then(function(data) {
-    document.getElementById('gh-gid').value = data.id;
-    document.getElementById('gistshow').innerHTML = 'Gist ID: <b>' + data.id + '</b> (sacuvaj ovaj ID!)';
     showMsg('Sacuvano! ' + arr.length + ' slicica', true);
   }).catch(function(e) { showMsg(e.message, false); });
 }
 
 window.onload = function() {
   loadLocal();
+  
+  // Popunjavamo polja u zupčaniku automatski iz gornjih promenljivih
+  if(document.getElementById('gh-tok')) document.getElementById('gh-tok').value = MOJ_TOKEN;
+  if(document.getElementById('gh-gid')) document.getElementById('gh-gid').value = MOJ_GIST_ID;
+  
   var sel = document.getElementById('tsel');
   var teams = ['Sve'];
   var seen = {};
@@ -834,7 +842,11 @@ window.onload = function() {
   }
   updateHeader();
   render();
+  
+  // Automatski povuci najnovije stanje sa GitHuba čim se stranica otvori
+  loadGist(); 
 };
 </script>
 </body>
 </html>
+
