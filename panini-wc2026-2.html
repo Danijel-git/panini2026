@@ -737,6 +737,7 @@ function render() {
 
 function toggle(n) {
   if (collected[n]) delete collected[n]; else collected[n] = 1;
+  saveLocal();
   saveGist();
   updateHeader();
   render();
@@ -764,22 +765,15 @@ function updateStickyTop() {
   document.getElementById('filters').style.top = (hh + ch) + 'px';
 }
 
-function showMsg(txt, ok) {
-  var el = document.getElementById('smsg');
-  el.style.display = 'block';
-  el.style.background = ok ? '#dcfce7' : '#fee2e2';
-  el.style.color = ok ? '#15803d' : '#b91c1c';
-  el.textContent = txt;
-  setTimeout(function() { el.style.display = 'none'; }, 3500);
-}
-
-var GFILE = 'panini_wc2026_tracker.json';
+var MOJ_TOKEN = "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";
+var MOJ_GIST_ID = "7f7aa6cba4d9eab8d2ebe27b14471ecb";
+var GFILE = "panini_wc2026_tracker.json";
 
 function loadGist() {
-  var token = document.getElementById('gh-tok').value.trim();
-  var gid = document.getElementById('gh-gid').value.trim();
-  if (!token || !gid) { showMsg('Unesi i token i Gist ID', false); return; }
-  fetch('https://api.github.com/gists/' + gid, {
+  var token = MOJ_TOKEN;
+  var gid = MOJ_GIST_ID;
+  if (!token || !gid) return;
+  fetch('https://github.com' + gid, {
     headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github+json' }
   }).then(function(r) {
     if (!r.ok) throw new Error('GitHub greska ' + r.status);
@@ -792,31 +786,27 @@ function loadGist() {
     var arr = parsed.collected || [];
     for (var i = 0; i < arr.length; i++) collected[arr[i]] = 1;
     saveLocal(); updateHeader(); render();
-    showMsg('Ucitano ' + arr.length + ' slicica', true);
-  }).catch(function(e) { showMsg(e.message, false); });
+  }).catch(function(e) { console.log(e.message); });
 }
 
 function saveGist() {
-  var token = document.getElementById('gh-tok').value.trim();
-  var gid = document.getElementById('gh-gid').value.trim();
-  if (!token) { showMsg('Unesi GitHub token', false); return; }
+  var token = MOJ_TOKEN;
+  var gid = MOJ_GIST_ID;
+  if (!token || !gid) return;
   var arr = Object.keys(collected).map(Number);
   var payload = { collected: arr, savedAt: new Date().toISOString() };
   var body = { description: 'Panini WC 2026 tracker', public: false, files: {} };
   body.files[GFILE] = { content: JSON.stringify(payload, null, 2) };
-  fetch(gid ? 'https://api.github.com/gists/' + gid : 'https://api.github.com/gists', {
-    method: gid ? 'PATCH' : 'POST',
+  fetch('https://github.com' + gid, {
+    method: 'PATCH',
     headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json', Accept: 'application/vnd.github+json' },
     body: JSON.stringify(body)
   }).then(function(r) {
     if (!r.ok) throw new Error('Greska ' + r.status);
     return r.json();
-  }).then(function(data) {
-    document.getElementById('gh-gid').value = data.id;
-    document.getElementById('gistshow').innerHTML = 'Gist ID: <b>' + data.id + '</b> (sacuvaj ovaj ID!)';
-    showMsg('Sacuvano! ' + arr.length + ' slicica', true);
-  }).catch(function(e) { showMsg(e.message, false); });
+  }).catch(function(e) { console.log(e.message); });
 }
+
 
 window.onload = function() {
   loadLocal();
