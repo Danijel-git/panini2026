@@ -144,8 +144,8 @@ body { background: #f0f4f8; color: #1a2540; font-family: Arial, sans-serif; font
     3. Unesi token i klikni <b>Sačuvaj</b> (automatski pravi novi Gist).<br>
     Zapamti Gist ID za sledeći put!
   </div>
-  <input type="password" id="gh-tok" placeholder="GitHub token (ghp_...)">
-  <input type="text" id="gh-gid" placeholder="Gist ID (prazno = napravi novi)">
+  <input type="password" id="gh-tok" placeholder="GitHub token (ghp_...)" value="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">
+  <input type="text" id="gh-gid" placeholder="Gist ID (prazno = napravi novi)" value="7f7aa6cba4d9eab8d2ebe27b14471ecb">
   <div class="brow">
     <button class="bload" onclick="loadGist()">📥 Učitaj sa GitHuba</button>
     <button class="bsave" onclick="saveGist()">💾 Sačuvaj na GitHub</button>
@@ -153,6 +153,7 @@ body { background: #f0f4f8; color: #1a2540; font-family: Arial, sans-serif; font
   <div id="smsg"></div>
   <div id="gistshow"></div>
 </div>
+
 
 <div id="filters">
   <input type="text" id="srch" placeholder="🔍  Pretraži po imenu, kodu (MEX6, ENG15...) ili broju app..." oninput="render()">
