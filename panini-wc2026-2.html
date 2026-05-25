@@ -776,8 +776,7 @@ function loadGist() {
   
   if (!token || !gid) { showMsg('Unesi i token i Gist ID', false); return; }
   
-  // VRAĆEN TVOJ ORIGINALNI ISPRAVAN LINK
-  fetch('https://github.com' + gid, {
+   fetch('https://github.com' + gid, {
     headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github+json' }
   }).then(function(r) {
     if (!r.ok) throw new Error('GitHub greska ' + r.status);
@@ -803,7 +802,6 @@ function saveGist() {
   var body = { description: 'Panini WC 2026 tracker', public: false, files: {} };
   body.files[GFILE] = { content: JSON.stringify(payload, null, 2) };
   
-  // VRAĆEN TVOJ ORIGINALNI ISPRAVAN LINK SA PATCH METODOM
   fetch(gid ? 'https://github.com' + gid : 'https://github.com', {
     method: gid ? 'PATCH' : 'POST',
     headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json', Accept: 'application/vnd.github+json' },
@@ -813,6 +811,7 @@ function saveGist() {
     return r.json();
   }).catch(function(e) { console.log(e.message); });
 }
+
 
 
 
