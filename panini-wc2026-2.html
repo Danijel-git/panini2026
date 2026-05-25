@@ -825,6 +825,7 @@ function saveGist() {
     method: 'PATCH',
     headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json', Accept: 'application/vnd.github+json' },
     body: JSON.stringify(body)
+  })
   }).then(function(r) {
     if (!r.ok) throw new Error('Greska ' + r.status);
     return r.json();
