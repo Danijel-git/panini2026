@@ -776,7 +776,7 @@ function showMsg(txt, ok) {
 
 var GFILE = 'panini_wc2026_tracker.json';
 
-// === SVE JE SREĐENO, TVOJI PODACI SU SADA UNUTAR NAVODNIKA ===
+// === SVE JE POPRAVLJENO, PODACI I NAVODNICI SU TU ===
 const MOJ_TOKEN = "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"; 
 const MOJ_GIST_ID = "7f7aa6cba4d9eab8d2ebe27b14471ecb";     
 const GFILE = "panini_wc2026_tracker.json"; 
@@ -785,7 +785,7 @@ function loadGist() {
   var token = MOJ_TOKEN;
   var gid = MOJ_GIST_ID;
   if (!token || !gid) { showMsg('Unesi i token i Gist ID', false); return; }
-  fetch('https://api.github.com/gists/' + gid, {
+  fetch('https://github.com' + gid, {
     headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github+json' }
   }).then(function(r) {
     if (!r.ok) throw new Error('GitHub greska ' + r.status);
@@ -810,7 +810,7 @@ function saveGist() {
   var payload = { collected: arr, savedAt: new Date().toISOString() };
   var body = { description: 'Panini WC 2026 tracker', public: false, files: {} };
   body.files[GFILE] = { content: JSON.stringify(payload, null, 2) };
-  fetch(gid ? 'https://api.github.com/gists/' + gid : 'https://api.github.com/gists', {
+  fetch(gid ? 'https://github.com' + gid : 'https://github.com', {
     method: gid ? 'PATCH' : 'POST',
     headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json', Accept: 'application/vnd.github+json' },
     body: JSON.stringify(body)
@@ -825,7 +825,6 @@ function saveGist() {
 window.onload = function() {
   loadLocal();
   
-  // Popunjavamo polja u zupčaniku automatski iz gornjih promenljivih
   if(document.getElementById('gh-tok')) document.getElementById('gh-tok').value = MOJ_TOKEN;
   if(document.getElementById('gh-gid')) document.getElementById('gh-gid').value = MOJ_GIST_ID;
   
@@ -843,7 +842,6 @@ window.onload = function() {
   updateHeader();
   render();
   
-  // Automatski povuci najnovije stanje sa GitHuba čim se stranica otvori
   loadGist(); 
 };
 </script>
