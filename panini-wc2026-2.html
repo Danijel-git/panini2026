@@ -771,9 +771,9 @@ function updateStickyTop() {
 }
 
 function loadGist() {
-  var token = MOJ_TOKEN;
-  var gid = MOJ_GIST_ID;
-  if (!token || !gid) return;
+  var token = "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";
+  var gid = "7f7aa6cba4d9eab8d2ebe27b14471ecb";
+  if (!token || !gid) { showMsg('Unesi i token i Gist ID', false); return; }
   fetch('https://github.com' + gid, {
     headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github+json' }
   }).then(function(r) {
@@ -787,26 +787,30 @@ function loadGist() {
     var arr = parsed.collected || [];
     for (var i = 0; i < arr.length; i++) collected[arr[i]] = 1;
     saveLocal(); updateHeader(); render();
-  }).catch(function(e) { console.log(e.message); });
+    showMsg('Ucitano ' + arr.length + ' slicica', true);
+  }).catch(function(e) { showMsg(e.message, false); });
 }
 
 function saveGist() {
-  var token = MOJ_TOKEN;
-  var gid = MOJ_GIST_ID;
-  if (!token || !gid) return;
+  var token = "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";
+  var gid = "7f7aa6cba4d9eab8d2ebe27b14471ecb";
+  if (!token) { showMsg('Unesi GitHub token', false); return; }
   var arr = Object.keys(collected).map(Number);
   var payload = { collected: arr, savedAt: new Date().toISOString() };
   var body = { description: 'Panini WC 2026 tracker', public: false, files: {} };
   body.files[GFILE] = { content: JSON.stringify(payload, null, 2) };
-  fetch('https://github.com' + gid, {
-    method: 'PATCH',
+  fetch(gid ? 'https://github.com' + gid : 'https://github.com', {
+    method: gid ? 'PATCH' : 'POST',
     headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json', Accept: 'application/vnd.github+json' },
     body: JSON.stringify(body)
   }).then(function(r) {
     if (!r.ok) throw new Error('Greska ' + r.status);
     return r.json();
-  }).catch(function(e) { console.log(e.message); });
+  }).then(function(data) {
+    showMsg('Sacuvano! ' + arr.length + ' slicica', true);
+  }).catch(function(e) { showMsg(e.message, false); });
 }
+
 
 
 window.onload = function() {
