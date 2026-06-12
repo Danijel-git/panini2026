@@ -834,23 +834,17 @@ function exportList() {
   }
   var text = lines.join('\n');
 
-  // Try clipboard first
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(function() {
-      showMsg('Lista kopirana u clipboard! (' + list.length + ' stavki)', true);
-    }).catch(function() {
-      downloadTextFile(text, modeLabel, teamLabel);
-    });
-  } else {
-    downloadTextFile(text, modeLabel, teamLabel);
-  }
+  // Odmah pokrećemo preuzimanje fajla, bez blokiranja od strane brauzera
+  downloadTextFile(text, modeLabel, teamLabel);
 }
 
 function downloadTextFile(text, modeLabel, teamLabel) {
-  var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  // Oznaka \uFEFF na početku popravlja prikaz naših slova (č, ć, š, đ, ž) u Notepadu i Excelu
+  var blob = new Blob(['\uFEFF' + text], { type: 'text/plain;charset=utf-8' });
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
-  var fname = 'panini_wc2026_' + modeLabel.toLowerCase() + (teamLabel ? teamLabel.replace(/[^a-zA-Z0-9]/g,'_') : '') + '.txt';
+  var safeTeam = teamLabel ? teamLabel.replace(/[^a-zA-Z0-9]/g,'_') : '';
+  var fname = 'panini_wc2026_' + modeLabel.toLowerCase() + safeTeam + '.txt';
   a.href = url;
   a.download = fname;
   document.body.appendChild(a);
@@ -859,6 +853,7 @@ function downloadTextFile(text, modeLabel, teamLabel) {
   setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
   showMsg('Fajl preuzet: ' + fname, true);
 }
+
 
 function toggle(n) {
   if (collected[n]) delete collected[n]; else collected[n] = 1;
